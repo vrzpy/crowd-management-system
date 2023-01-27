@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="container" style="position: relative;">
+        <div class="row">
+            <div class="col-12"><h1 class="text-center p-2">Crowd Guru</h1></div>
+        </div>
+        <div class="row my-4">
+            <div class="col-2"></div>
+            <div class="col-8">
+                <h3 class="text-center p-3 mx-auto" id="TrafficHeading">Live Traffic Status</h3>
+            </div>
+            <div class="col-2"></div>
+            <div class="col-2"></div>
+            <div class="col-8">
+                <div class="row">
+                    <div class="col-3"></div>
+                    <div class="col-2">
+                        <h5 class="text-center" style="color: rgb(0, 255, 0);">Low</h5>
+                    </div>
+                    <div class="col-2">
+                        <h5 class="text-center" style="color: rgb(212, 212, 0);">Moderate</h5>
+                    </div>
+                    <div class="col-2">
+                        <h5 class="text-center" style="color: red;">High</h5>
+                    </div>
+                    <div class="col-3"></div>
+                </div>
+            </div>
+            <div class="col-2"></div>
+            <div class="col-3 my-3"></div>
+            <div class="col-6 my-3">
+                <table class="table table-stripped">
+                    <tbody>
+                        {% for station in stationList %}
+                        <tr>
+                            <td class="ToAhmedabadTrains text-center" style="background-color: rgb(0, 255, 0);"><i class="fa-solid fa-angle-up"></i></td>
+                            <td class="StationDisplay text-center" style="background-color: rgb(0, 255, 0);" station-id="{{station.id}}">{{station.Name}} ({{station.Code}})</td>
+                            <td class="ToVapiTrains text-center"  style="background-color: rgb(0, 255, 0);"><i class="fa-solid fa-angle-down"></i></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-3 my-3"></div>
+        </div>
+
+        <div class="row my-4">
+            <div class="col-12">
+                <h3 class="text-center">Journey History</h3>
+            </div>
+            <div class="col-12">
+                <table class="table table-dark table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Sr. No.</th>
+                            <th scope="col">Source</th>
+                            <th scope="col">Destination</th>
+                            <th scope="col">Fare</th>
+                        </tr>
+                    </thead>
+                    {% for travel in history %}
+                    <tbody>
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{travel.Source}}</td>
+                            <td>{{travel.Destination}}</td>
+                            <td>{{travel.Price}}</td>
+                        </tr>
+                    </tbody>
+                    {% endfor %}    
+                </table>
+            </div>
+        </div>
+
+        <div class="row my-4">
+            <div class="col-12">
+                <h3 class="text-center">Live News</h3>
+            </div>
+            <div class="col-12">
+                <ul id="NewsFeed"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script>
+        function DataFetch() {
+            $.ajax({
+            type: 'GET',
+            url: "{% url 'StationStatus' %}",
+            success: function(response) {
+                Station_Status = response['Station_Status']
+                Towards_ADI_Status = response['Towards_ADI_Status']
+                Towards_VAPI_Status = response['Towards_VAPI_Status']
+
+                StationDisplay = document.getElementsByClassName('StationDisplay')
+                ToAhmedabadTrainsDisplay = document.getElementsByClassName('ToAhmedabadTrains')
+                ToVapiTrainsDisplay = document.getElementsByClassName('ToVapiTrains')
+
+                console.log(ToAhmedabadTrainsDisplay)
+
+                for(i = 0; i < Station_Status.length; i++){
+                    if (Station_Status[i]['Density'] > 50){
+                        StationDisplay[i].style.backgroundColor = 'red'
+                    }
+                    else if(Station_Status[i]['Density'] > 35){
+                        StationDisplay[i].style.backgroundColor = 'rgb(212, 212, 0)'
+                    }
+                    else{
+                        StationDisplay[i].style.backgroundColor = 'rgb(0, 255, 0)'
+                    }
+
+                    if (Towards_ADI_Status[i]['Density'] > 50){
+                        ToAhmedabadTrainsDisplay[i].style.backgroundColor = 'red'
+                    }
+                    else if(Towards_ADI_Status[i]['Density'] > 35){
+                        ToAhmedabadTrainsDisplay[i].style.backgroundColor = 'rgb(212, 212, 0)'
+                    }
+                    else{
+                        ToAhmedabadTrainsDisplay[i].style.backgroundColor = 'rgb(0, 255, 0)'
+                    }
+
+                    if (Towards_VAPI_Status[i]['Density'] > 50){
+                        ToVapiTrainsDisplay[i].style.backgroundColor = 'red'
+                    }
+                    else if(Towards_VAPI_Status[i]['Density'] > 35){
+                        ToVapiTrainsDisplay[i].style.backgroundColor = 'rgb(212, 212, 0)'
+                    }
+                    else{
+                        ToVapiTrainsDisplay[i].style.backgroundColor = 'rgb(0, 255, 0)'
+                    }
+                }
+            }
+        })
+        }
+
+        DataFetch()
+        
+        setInterval(DataFetch, 15000)
+
+        function UpdateNews() {
+            $.ajax({
+            type: 'GET',
+            url: "{% url 'UpdateNews' %}",
+            success: function(response) {
+                Updated_News = response['News']
+
+                console.log(Updated_News)
+
+                NewsFeed.innerHTML = ''
+                for(i = 0; i < Updated_News.length; i++){
+                    NewsFeed.innerHTML += `<li>${Updated_News[i]['News']}</li>`
+                }
+            }
+        })
+        }
+
+        setInterval(UpdateNews, 15000)
+
+        // function ChangeHeadingColor() {
+        //     if(TrafficHeading.style.color == 'rgb(0, 255, 0)'){
+        //         TrafficHeading.style.color = 'rgb(212, 212, 0)'
+        //     }
+        //     else if(TrafficHeading.style.color == 'rgb(212, 212, 0)'){
+        //         TrafficHeading.style.color = 'red'
+        //     }
+        //     else{
+        //         TrafficHeading.style.color = 'rgb(0,255,0)'
+        //     }
+        // }
+
+        // setInterval(ChangeHeadingColor, 200)
+
+    </script>
+
+</body>
+</html>
